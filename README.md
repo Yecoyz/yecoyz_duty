@@ -16,7 +16,7 @@ All of the features our script have and all the possibilities.
   <a href="https://yecoyz-resources-shop.tebex.io/category/2920585" target="_blank">
     <img src="https://img.shields.io/badge/🛒 Tebex Store-blue?style=for-the-badge&logo=cart&logoColor=white" />
   </a>
-  <a href="https://discord.yecoyzresources.com/" target="_blank">
+  <a href="[https://discord.yecoyzresources.com/](https://discord.com/invite/s2NSxrDnNY)" target="_blank">
     <img src="https://img.shields.io/badge/💬 Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" />
   </a>
   <a href="https://ko-fi.com/yecoyz" target="_blank">
