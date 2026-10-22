@@ -7,11 +7,23 @@ Config.Jobs = {
     "mechanic",
 }
 
+-- Only if you use ESX. ESX has no phone number by default, it comes from your phone script.
+-- Default fits phone scripts that add `phone_number` to `users` (gksphone, qs-smartphone, npwd).
+-- lb-phone: table = "phone_phones", column = "phone_number", identifierColumn = "owner_id".
+-- If the table or column does not exist the phone number shows as Unknown.
+Config.PhoneNumber = {
+    table = "users",
+    column = "phone_number",
+    identifierColumn = "identifier",
+}
+
 Config.OffDutySettings = {
     PayOffDuty = false, -- Should you be paid if your not in duty.
     OffDutyMultiplier = 1 -- How much of your salary should you be paid if your off duty.
 }
 
+-- Every job keeps its own multiplier. Changing job ends the current shift, so a multiplier
+-- built up in one job is never paid out in another.
 Config.MultiplierSettings = {
     SalaryMultiplier = true,
     Hourlyloss = 0.1,
@@ -23,7 +35,7 @@ Config.MultiplierSettings = {
         ["mechanic"] = {
             increasePerHour = 0.1, -- How much it will add per hour.
             maxMultiplier = 1.8, -- The limit of how high your multiplier can go.
-        } 
+        }
     }
 }
 

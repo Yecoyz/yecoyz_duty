@@ -9,56 +9,52 @@ RegisterCommand("duty", function()
     local playerName = GetPlayerFullName()
     local playerJobLabel = GetPlayerJobLabel()
     local playerRank = GetPlayerJobGradeName()
+    local isOnDuty = GetPlayerOnDuty() == true
     local dutyStarted = nil
 
-    
-    if (GetPlayerOnDuty()) then
+    if (isOnDuty) then
         dutyStarted = lib.callback.await("yecoyz_duty:getActiveDutyTime", false)
     end
 
-    local activeWorkers = lib.callback.await("yecoyz_duty:getActiveWorkers", false, playerJob)
-    if (not activeWorkers) then return false end
-    
-    for i = 1, #activeWorkers do
-        activeWorkers[i].online = true
-    end    
-
+    local workers = lib.callback.await("yecoyz_duty:getActiveWorkers", false) or {}
     local dutyHistory = GetDutyHistory()
-
     local isBoss = GetIfBoss()
-    local employees =  lib.callback.await("yecoyz_duty:getAllEmployees", false, playerJob)
-    
-    if (activeWorkers) then
-        local existingEmployees = {}
-        
-        for i = 1, #activeWorkers do
-            existingEmployees[activeWorkers[i].identifier] = true
-        end
-        
-        for i = 1, #employees do
-            local employeeIdentifier = employees[i].identifier
-            
-            if (not existingEmployees[employeeIdentifier]) then
-                table.insert(activeWorkers, {
-                    source = nil,
-                    identifier = employeeIdentifier,
-                    name = employees[i].firstname .. " " .. employees[i].lastname,
-                    job = employees[i].job.label,
-                    grade = employees[i].job_grade,
-                    phone = employees[i].phone_number or "0",
-                    dutyTime = nil,
-                    online = false
-                })
+    local employees = lib.callback.await("yecoyz_duty:getAllEmployees", false) or {}
 
-                existingEmployees[employeeIdentifier] = true
-            end
+    local existingEmployees = {}
+    for i = 1, #workers do
+        workers[i].online = true
+        existingEmployees[workers[i].identifier] = true
+    end
+
+    for i = 1, #employees do
+        local employee = employees[i]
+
+        if (not existingEmployees[employee.identifier]) then
+            workers[#workers + 1] = {
+                identifier = employee.identifier,
+                name = employee.firstname .. " " .. employee.lastname,
+                job = employee.job,
+                grade = employee.job_grade,
+                phone = employee.phone_number or "Unknown",
+                online = false
+            }
+            existingEmployees[employee.identifier] = true
         end
     end
-    
+
     SendNUIMessage({
         action = "showUI",
-        character = { name = playerName, job = playerJobLabel, grade = playerRank, isOnDuty = GetPlayerOnDuty(), dutyStarted = dutyStarted, isBoss = isBoss},
-        workers = activeWorkers,
+        character = {
+            name = playerName,
+            job = playerJobLabel,
+            jobName = playerJob,
+            grade = playerRank,
+            isOnDuty = isOnDuty,
+            dutyStarted = dutyStarted,
+            isBoss = isBoss
+        },
+        workers = workers,
         shifts = dutyHistory
     })
 end, false)
@@ -70,9 +66,8 @@ AddEventHandler("onResourceStart", function(resourceName)
     end
     local allowedJob = HasAllowedJob(GetPlayerJobName())
     if (not allowedJob) then return end
-    local duty = GetPlayerOnDuty()
 
-    if (duty) then
-        local startDutyTime = lib.callback.await("yecoyz_duty:startDuty", false)
+    if (GetPlayerOnDuty()) then
+        lib.callback.await("yecoyz_duty:startDuty", false)
     end
 end)

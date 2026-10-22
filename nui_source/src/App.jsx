@@ -1,62 +1,55 @@
-import { useState, useEffect } from 'react';
-import { MantineProvider } from '@mantine/core';
-import { motion, AnimatePresence } from 'framer-motion';
-import Base from "./components/Base";
-import Header from './components/Header';
-import Profile from './components/Profile';
-import { FileIcon } from 'lucide-react';
-import TabSelector from './components/TabSelector';
-import { TabProvider } from './contexts/TabContext';
-import { VisibilityProvider, useVisibility } from './contexts/VisibilityContext';
-import { callback } from './utilites/callback';
-import { TranslationProvider, useTranslation } from './contexts/TranslationProvider';
+import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ClipboardList, X } from "lucide-react";
+import Profile from "./components/Profile";
+import TabSelector from "./components/TabSelector";
+import { VisibilityProvider, useVisibility } from "./contexts/VisibilityContext";
+import { TranslationProvider, useTranslation } from "./contexts/TranslationProvider";
+import { callback } from "./utilites/callback";
 
 const AppContent = () => {
   const { isVisible, setIsVisible, characterData } = useVisibility();
   const { t } = useTranslation();
-  const [canManage, setCanManage] = useState(false);
-  useEffect(() => {
-    if (characterData && characterData.isBoss !== undefined) {
-      setCanManage(characterData.isBoss);
-    }
-  }, [characterData]);
-  
+
   const handleClose = () => {
-    callback("closePage").then(() => {
-      setIsVisible(false);
-    })
+    setIsVisible(false);
+    callback("closePage").catch(() => {});
   };
-  
+
+  useEffect(() => {
+    if (!isVisible) return undefined;
+    const onKey = (event) => {
+      if (event.key === "Escape") handleClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   return (
     <AnimatePresence>
       {isVisible && (
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-          width: "100vw",
-          overflow: "hidden",
-        }}>
+        <div className="overlay">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 50 }}
-            transition={{ 
-              duration: 0.2, 
-              ease: "easeOut",
-              type: "spring", 
-              stiffness: 200,
-              damping: 20
-            }}
+            className="panel duty"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <Base width='500px' height='800px'>
-              <Header title={t("ui_DutyTitle")} icon={<FileIcon size={20} color="#4dabf7" />} onClose={handleClose} />
-              <Profile />
-              <TabProvider canManage={canManage}>
-                <TabSelector />
-              </TabProvider>
-            </Base>
+            <header className="duty-header">
+              <div className="duty-header-left">
+                <div className="icon-tile">
+                  <ClipboardList size={18} />
+                </div>
+                <h1 className="title">{t("ui_DutyTitle")}</h1>
+              </div>
+              <button type="button" className="icon-button" onClick={handleClose} aria-label="Close">
+                <X size={18} />
+              </button>
+            </header>
+
+            <Profile />
+            <TabSelector canManage={Boolean(characterData.isBoss)} />
           </motion.div>
         </div>
       )}
@@ -66,13 +59,11 @@ const AppContent = () => {
 
 function App() {
   return (
-    <MantineProvider>
-      <VisibilityProvider>
-        <TranslationProvider>
+    <VisibilityProvider>
+      <TranslationProvider>
         <AppContent />
-        </TranslationProvider>
-      </VisibilityProvider>
-    </MantineProvider>
+      </TranslationProvider>
+    </VisibilityProvider>
   );
 }
 

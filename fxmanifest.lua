@@ -2,7 +2,7 @@ fx_version "cerulean"
 game "gta5"
 
 author "Yecoyz - Yecoyz Resources"
-version "1.0.4"
+version "1.0.7"
 lua54 "yes"
 
 client_scripts {

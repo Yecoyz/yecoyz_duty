@@ -1,100 +1,75 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { isBrowser, mockData } from "../lib/mock";
 
 const VisibilityContext = createContext();
 
 export const useVisibility = () => useContext(VisibilityContext);
 
+const toList = (value) => (Array.isArray(value) ? value : []);
+
 export const VisibilityProvider = ({ children }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [workerData, setWorkerData] = useState(null);
-  const [shiftsData, setShiftsData] = useState(null);
-  const [translations, setTranslations] = useState({});
-  const [characterData, setCharacterData] = useState({
-    name: "Robert Taylor",
-    job: "LSPD",
-    grade: "Officer",
-    isOnDuty: false,
-    dutyStarted: null
-  });
-  
-  const toggleVisibility = () => {
-    setIsVisible((prev) => !prev);
+  const [isVisible, setIsVisible] = useState(isBrowser);
+  const [workerData, setWorkerData] = useState(isBrowser ? mockData.workers : []);
+  const [shiftsData, setShiftsData] = useState(isBrowser ? mockData.shifts : []);
+  const [characterData, setCharacterData] = useState(
+    isBrowser
+      ? mockData.character
+      : { name: "", job: "", jobName: "", grade: "", isOnDuty: false, dutyStarted: null, isBoss: false }
+  );
+
+  // dutyStarted is always epoch seconds (or null).
+  const setDutyState = (isOnDuty, dutyStarted) => {
+    setCharacterData((prev) => ({
+      ...prev,
+      isOnDuty: Boolean(isOnDuty),
+      dutyStarted: isOnDuty ? dutyStarted || Math.floor(Date.now() / 1000) : null,
+    }));
   };
-  
-  // Function to toggle duty status and send message back to client
-  const toggleDuty = () => {
-    const newDutyStatus = !characterData.isOnDuty;
-    
-    setCharacterData({
-      ...characterData,
-      isOnDuty: newDutyStatus,
-      dutyStarted: newDutyStatus ? Math.floor(Date.now() / 1000) : null // Spara tidsstämpel i sekunder
-    });
-  };
-  
-  
+
   useEffect(() => {
     const handleMessage = (event) => {
       const data = event.data;
-      
-      if (data) {
-        if (data.action === "showUI") {
-          setIsVisible(true);
-          
-          if (data.workers) {
-            setWorkerData(data.workers);
-          }
-          
-          if (data.shifts) {
-            setShiftsData(data.shifts);
-          }
+      if (!data) return;
 
-          if (data.character) {
-            setCharacterData({
-              ...data.character,
-              isOnDuty: data.character.isOnDuty !== undefined ? data.character.isOnDuty : false,
-              dutyStarted: data.character.dutyStarted ? new Date(data.character.dutyStarted) : null
-            });
-
-            if (data.translations) {
-              setTranslations(data.translations)
-            }
-
-          }
-        } else if (data.action === "hideUI") {
-          setIsVisible(false);
-        } else if (data.action === "updateWorkers") {
-          setWorkerData(data.workers);
-        } else if (data.action === "updateShifts") {
-          setShiftsData(data.shifts);
-        } else if (data.action === "updateCharacter") {
+      if (data.action === "showUI") {
+        setWorkerData(toList(data.workers));
+        setShiftsData(toList(data.shifts));
+        if (data.character) {
           setCharacterData({
             ...data.character,
-            isOnDuty: data.character.isOnDuty !== undefined ? data.character.isOnDuty : characterData.isOnDuty,
-            dutyStarted: data.character.dutyStarted ? new Date(data.character.dutyStarted) : characterData.dutyStarted
+            isOnDuty: Boolean(data.character.isOnDuty),
+            dutyStarted: data.character.dutyStarted || null,
+            isBoss: Boolean(data.character.isBoss),
           });
         }
+        setIsVisible(true);
+      } else if (data.action === "hideUI") {
+        setIsVisible(false);
+      } else if (data.action === "updateWorkers") {
+        setWorkerData(toList(data.workers));
+      } else if (data.action === "updateShifts") {
+        setShiftsData(toList(data.shifts));
+      } else if (data.action === "updateCharacter" && data.character) {
+        setCharacterData((prev) => ({ ...prev, ...data.character }));
       }
     };
-    
+
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [characterData.isOnDuty, characterData.dutyStarted]);
-  
+  }, []);
+
   return (
     <VisibilityContext.Provider
-      value={{ 
-        isVisible, 
-        toggleVisibility,
+      value={{
+        isVisible,
         setIsVisible,
         workerData,
         shiftsData,
         characterData,
-        toggleDuty,
+        setDutyState,
         setWorkerData,
         setShiftsData,
         setCharacterData,
-        translations
       }}
     >
       {children}
