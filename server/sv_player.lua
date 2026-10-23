@@ -1,14 +1,4 @@
-CreateThread(function ()
-    if (GetResourceState("es_extended") == "started") then
-        Framework = "ESX"
-        ESX = exports["es_extended"]:getSharedObject()
-        print("[INFO] - ESX Framework")
-    elseif (GetResourceState("qb-core") == "started") or (GetResourceState("qbx_core") == "started") then
-        Framework = "QBCore"
-        QBCore = exports['qb-core']:GetCoreObject()
-        print("[INFO] - QBCore Framework")
-    end
-end)
+-- Player, job and employee lookups for duty, on top of yecoyz_core.
 
 AddEventHandler("playerDropped", function()
     local src = source
@@ -20,57 +10,21 @@ end)
 
 -- qbx_core always keeps duty on the framework, so treat it as framework based.
 function UsesFrameworkDuty()
-    return Config.FrameworkBased or (GetResourceState("qbx_core") == "started")
-end
-
-function GetPlayerFromId(source)
-    if (Framework == "ESX") then
-        return ESX.GetPlayerFromId(source)
-    elseif (Framework == "QBCore") and (GetResourceState("qbx_core") == "started") then
-        return exports.qbx_core:GetPlayer(source)
-    elseif (Framework == "QBCore") then
-        return QBCore.Functions.GetPlayer(source)
-    end
-    return nil
+    return Config.FrameworkBased or (Core.Framework == "qbox")
 end
 
 function GetIdentifier(source)
-    local player = GetPlayerFromId(source)
-    if (not player) then return end
-
-    if (Framework == "ESX") then
-        return player.getIdentifier()
-    elseif (Framework == "QBCore") then
-        return player.PlayerData.citizenid
-    end
-
-    return nil
+    return Core.GetIdentifier(source)
 end
 
 function GetPlayerJob(source)
-    local player = GetPlayerFromId(source)
-    if (not player) then return nil end
-
-    if (Framework == "ESX") then
-        return player.getJob().name
-    elseif (Framework == "QBCore") then
-        return player.PlayerData.job.name
-    end
-
-    return nil
+    local job = Core.GetJob(source)
+    return job and job.name or nil
 end
 
 function GetPlayerJobLabel(source)
-    local player = GetPlayerFromId(source)
-    if (not player) then return nil end
-
-    if (Framework == "ESX") then
-        return player.getJob().label
-    elseif (Framework == "QBCore") then
-        return player.PlayerData.job.label
-    end
-
-    return nil
+    local job = Core.GetJob(source)
+    return job and job.label or nil
 end
 
 function GetPlayerOnDuty(source)
@@ -79,15 +33,9 @@ function GetPlayerOnDuty(source)
         return dutyData ~= nil and dutyData.onDuty == true
     end
 
-    local player = GetPlayerFromId(source)
-    if (not player) then return nil end
-
-    if (Framework == "ESX") then
-        return player.getJob().onDuty
-    elseif (Framework == "QBCore") then
-        return player.PlayerData.job.onduty
-    end
-    return nil
+    local job = Core.GetJob(source)
+    if (not job) then return nil end
+    return job.onDuty
 end
 
 -- Only plain table/column names are allowed since they are put straight into the query.
@@ -122,7 +70,7 @@ local function HasPhoneColumn()
 end
 
 function GetPhoneNumber(identifier)
-    if (Framework == "ESX") then
+    if (Core.Framework == "esx") then
         if (not HasPhoneColumn()) then return "Unknown" end
 
         local settings = Config.PhoneNumber
@@ -131,7 +79,7 @@ function GetPhoneNumber(identifier)
         ), { identifier })
 
         return phone or "Unknown"
-    elseif (Framework == "QBCore") then
+    elseif (Core.Framework == "qb") or (Core.Framework == "qbox") then
         local result = MySQL.single.await("SELECT `charinfo` FROM `players` WHERE `citizenid` = ? LIMIT 1", {
             identifier
         })
@@ -143,8 +91,9 @@ function GetPhoneNumber(identifier)
     return "Unknown"
 end
 
+-- Every employee of a job, online or not, read from the framework's tables.
 function GetAllEmployees(jobName)
-    if (Framework == "ESX") then
+    if (Core.Framework == "esx") then
         local employees = MySQL.query.await([[
             SELECT u.identifier, u.firstname, u.lastname, g.label AS grade_label
             FROM users u
@@ -165,7 +114,7 @@ function GetAllEmployees(jobName)
         end
 
         return employees
-    elseif (Framework == "QBCore") then
+    elseif (Core.Framework == "qb") or (Core.Framework == "qbox") then
         local rawEmployees = MySQL.query.await("SELECT citizenid, charinfo, job FROM players WHERE JSON_UNQUOTE(JSON_EXTRACT(job, '$.name')) = ?", {jobName}) or {}
         local employees = {}
 
@@ -188,19 +137,18 @@ function GetAllEmployees(jobName)
     return {}
 end
 
+-- QBCore / Qbox: the job's boss flag. ESX: the boss grades in Config.BossGrades (and yecoyz_core's).
 function GetBossPermission(source)
-    local player = GetPlayerFromId(source)
-    if (not player) then return false end
+    local job = Core.GetJob(source)
+    if (not job) then return false end
+    if (job.isBoss) then return true end
 
-    if (Framework == "ESX") then
+    if (Core.Framework == "esx") then
         for i = 1, #Config.BossGrades do
-            if (player.getJob().grade_name == Config.BossGrades[i]) then
+            if (job.gradeName == Config.BossGrades[i]) then
                 return true
             end
         end
-        return false
-    elseif (Framework == "QBCore") then
-        return player.PlayerData.job.isboss or false
     end
 
     return false
@@ -216,46 +164,26 @@ end
 
 function GetActiveWorkers(jobName)
     local activeWorkers = {}
+    if (not jobName) then return activeWorkers end
 
-    if (Framework == "ESX") then
-        local playersWithSameJob = ESX.GetExtendedPlayers("job", jobName)
+    for _, src in ipairs(Core.GetPlayersByJob(jobName)) do
+        if (GetPlayerOnDuty(src)) then
+            local job = Core.GetJob(src) or {}
+            local identifier = Core.GetIdentifier(src)
+            local character = Core.GetCharacter(src) or {}
+            local startTime = ShiftStartFor(src, jobName)
 
-        for i = 1, #playersWithSameJob do
-            local xPlayer = playersWithSameJob[i]
-            if (GetPlayerOnDuty(xPlayer.source)) then
-                local startTime = ShiftStartFor(xPlayer.source, jobName)
-                activeWorkers[#activeWorkers + 1] = {
-                    source = xPlayer.source,
-                    identifier = xPlayer.identifier,
-                    name = GetFullName(xPlayer.source),
-                    job = xPlayer.job.label,
-                    grade = xPlayer.job.grade_label,
-                    phone = GetPhoneNumber(xPlayer.identifier),
-                    dutyStarted = startTime,
-                    dutyTime = FormatDutyTime(startTime),
-                    online = true
-                }
-            end
-        end
-    elseif (Framework == "QBCore") then
-        local activePlayers = QBCore.Functions.GetPlayers()
-        for i = 1, #activePlayers do
-            local player = GetPlayerFromId(activePlayers[i])
-
-            if (player) and (player.PlayerData.job.name == jobName) and (GetPlayerOnDuty(player.PlayerData.source)) then
-                local startTime = ShiftStartFor(player.PlayerData.source, jobName)
-                activeWorkers[#activeWorkers + 1] = {
-                    source = player.PlayerData.source,
-                    identifier = player.PlayerData.citizenid,
-                    name = GetFullName(player.PlayerData.source),
-                    job = player.PlayerData.job.label,
-                    grade = player.PlayerData.job.grade.name,
-                    phone = player.PlayerData.charinfo.phone or "Unknown",
-                    dutyStarted = startTime,
-                    dutyTime = FormatDutyTime(startTime),
-                    online = true
-                }
-            end
+            activeWorkers[#activeWorkers + 1] = {
+                source = src,
+                identifier = identifier,
+                name = GetFullName(src),
+                job = job.label,
+                grade = job.gradeLabel,
+                phone = character.phone or GetPhoneNumber(identifier),
+                dutyStarted = startTime,
+                dutyTime = FormatDutyTime(startTime),
+                online = true
+            }
         end
     end
 
@@ -269,17 +197,7 @@ function SetDuty(source, status)
     end
 
     if (UsesFrameworkDuty()) then
-        local player = GetPlayerFromId(source)
-        if (not player) then return false end
-
-        if (Framework == "ESX") then
-            local job = player.getJob()
-            player.setJob(job.name, job.grade, status)
-        elseif (GetResourceState("qbx_core") == "started") then
-            exports.qbx_core:SetJobDuty(GetIdentifier(source), status)
-        elseif (Framework == "QBCore") then
-            player.Functions.SetJobDuty(status)
-        end
+        if (not Core.SetDuty(source, status)) then return false end
     end
 
     if (status) then
@@ -290,22 +208,7 @@ function SetDuty(source, status)
 end
 
 function GetFullName(source)
-    if (Framework == "ESX") then
-        local playerData = GetPlayerFromId(source)
-        local firstName = playerData?.firstName or playerData?.variables?.firstName or "Unknown"
-        local lastName = playerData?.lastName or playerData?.variables?.lastName or "Unknown"
-
-        return firstName .. " " .. lastName
-    elseif (Framework == "QBCore") then
-        local player = GetPlayerFromId(source)
-        if (not player) then return "Unknown Unknown" end
-        local firstName = player?.PlayerData?.charinfo?.firstname or "Unknown"
-        local lastName = player?.PlayerData?.charinfo?.lastname or "Unknown"
-
-        return firstName .. " " .. lastName
-    end
-
-    return "Unknown Unknown"
+    return Core.GetFullName(source) or "Unknown Unknown"
 end
 
 -- Multijob: when the job changes mid shift the shift is closed and saved to the old job,
@@ -337,21 +240,15 @@ local function OnJobChanged(source, jobName, onDuty)
     end
 end
 
-AddEventHandler("esx:setJob", function(source, job)
-    if (not job) then return end
+Core.OnJobUpdated(function(source, job)
     OnJobChanged(source, job.name, job.onDuty)
 end)
 
-AddEventHandler("QBCore:Server:OnJobUpdate", function(source, job)
-    if (not job) then return end
-    OnJobChanged(source, job.name, job.onduty)
-end)
-
-lib.callback.register("yecoyz_duty:getFullName", function(source)
+Core.Callback.Register("yecoyz_duty:getFullName", function(source)
     return GetFullName(source)
 end)
 
-lib.callback.register("yecoyz_duty:setDuty", function(source, status)
+Core.Callback.Register("yecoyz_duty:setDuty", function(source, status)
     local onDuty = SetDuty(source, status == true)
     local dutyData = Cache.DutyData[source]
 

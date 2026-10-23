@@ -140,37 +140,37 @@ function StopDuty(source)
     return SaveShift(dutyData, os.time())
 end
 
-lib.callback.register("yecoyz_duty:getActiveDutyTime", function(source)
+Core.Callback.Register("yecoyz_duty:getActiveDutyTime", function(source)
     return Cache.DutyData[source] and Cache.DutyData[source].startTime or nil
 end)
 
-lib.callback.register("yecoyz_duty:startDuty", function(source)
+Core.Callback.Register("yecoyz_duty:startDuty", function(source)
     return StartDuty(source)
 end)
 
-lib.callback.register("yecoyz_duty:stopDuty", function(source)
+Core.Callback.Register("yecoyz_duty:stopDuty", function(source)
     return StopDuty(source)
 end)
 
-lib.callback.register("yecoyz_duty:isBoss", function(source)
+Core.Callback.Register("yecoyz_duty:isBoss", function(source)
     return GetBossPermission(source)
 end)
 
 -- The job is read on the server, so a client can't ask for another job's staff.
-lib.callback.register("yecoyz_duty:getActiveWorkers", function(source)
+Core.Callback.Register("yecoyz_duty:getActiveWorkers", function(source)
     return GetActiveWorkers(GetPlayerJob(source))
 end)
 
-lib.callback.register("yecoyz_duty:getAllEmployees", function(source)
+Core.Callback.Register("yecoyz_duty:getAllEmployees", function(source)
     return GetAllEmployees(GetPlayerJob(source))
 end)
 
 -- Kept for scripts that call it, shifts are now saved when duty stops.
-lib.callback.register("yecoyz_duty:updateHistory", function()
+Core.Callback.Register("yecoyz_duty:updateHistory", function()
     return true
 end)
 
-lib.callback.register("yecoyz_duty:getHistory", function(source)
+Core.Callback.Register("yecoyz_duty:getHistory", function(source)
     local identifier = GetIdentifier(source)
     if (not identifier) then return {} end
 
@@ -182,7 +182,7 @@ end)
 
 -- Bosses only see the shifts worked in their own job. Old shifts saved before
 -- multijob support have no job and are still shown.
-lib.callback.register("yecoyz_duty:getEmployeHistory", function(source, identifier)
+Core.Callback.Register("yecoyz_duty:getEmployeHistory", function(source, identifier)
     if (type(identifier) ~= "string") or (not GetBossPermission(source)) then return {} end
 
     local jobName = GetPlayerJob(source)
@@ -199,7 +199,7 @@ lib.callback.register("yecoyz_duty:getEmployeHistory", function(source, identifi
     return shifts
 end)
 
-lib.callback.register("yecoyz_duty:getStandaloneDuty", function(source)
+Core.Callback.Register("yecoyz_duty:getStandaloneDuty", function(source)
     return GetPlayerOnDuty(source)
 end)
 

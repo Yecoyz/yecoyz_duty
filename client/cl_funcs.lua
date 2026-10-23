@@ -10,21 +10,21 @@ function ToggleDuty()
 end
 
 function SaveDutyHistory()
-    local updateHistory = lib.callback.await("yecoyz_duty:updateHistory", false)
+    local updateHistory = Core.Callback.Await("yecoyz_duty:updateHistory")
     if (not updateHistory) then return false end
 
     return true
 end
 
 function GetDutyHistory()
-    local history = lib.callback.await("yecoyz_duty:getHistory", false)
+    local history = Core.Callback.Await("yecoyz_duty:getHistory")
     if (not history) then return {} end
 
     return history
 end
 
 function GetIfBoss()
-    local isBoss = lib.callback.await("yecoyz_duty:isBoss", false)
+    local isBoss = Core.Callback.Await("yecoyz_duty:isBoss")
     if (not isBoss) then return false end
 
     return isBoss
@@ -55,7 +55,7 @@ RegisterNUICallback("Eventhandler", function(data, cb)
             shifts = GetDutyHistory()
         })
     elseif (data.event == "getEmployeeHistory") then
-        local employeHistory = lib.callback.await("yecoyz_duty:getEmployeHistory", false, data.data)
+        local employeHistory = Core.Callback.Await("yecoyz_duty:getEmployeHistory", data.data)
         return cb(employeHistory or {})
     elseif (data.event == ("getLocale")) then
         local uiLocales = {}

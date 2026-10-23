@@ -13,13 +13,13 @@ RegisterCommand("duty", function()
     local dutyStarted = nil
 
     if (isOnDuty) then
-        dutyStarted = lib.callback.await("yecoyz_duty:getActiveDutyTime", false)
+        dutyStarted = Core.Callback.Await("yecoyz_duty:getActiveDutyTime")
     end
 
-    local workers = lib.callback.await("yecoyz_duty:getActiveWorkers", false) or {}
+    local workers = Core.Callback.Await("yecoyz_duty:getActiveWorkers") or {}
     local dutyHistory = GetDutyHistory()
     local isBoss = GetIfBoss()
-    local employees = lib.callback.await("yecoyz_duty:getAllEmployees", false) or {}
+    local employees = Core.Callback.Await("yecoyz_duty:getAllEmployees") or {}
 
     local existingEmployees = {}
     for i = 1, #workers do
@@ -68,6 +68,6 @@ AddEventHandler("onResourceStart", function(resourceName)
     if (not allowedJob) then return end
 
     if (GetPlayerOnDuty()) then
-        lib.callback.await("yecoyz_duty:startDuty", false)
+        Core.Callback.Await("yecoyz_duty:startDuty")
     end
 end)
