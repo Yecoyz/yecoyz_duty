@@ -23,6 +23,6 @@ All of the features our script have and all the possibilities.
     <img src="https://img.shields.io/badge/☕ Support Me-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" />
   </a>
     <a href="https://yecoyz.com/docs/yecoyz_duty/overview" target="_blank">
-    <img src="https://img.shields.io/badge/Documentation-Read%20the%20docs-2F80ED?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Documentation-2F80ED?style=for-the-badge" />
   </a>
 </p>
