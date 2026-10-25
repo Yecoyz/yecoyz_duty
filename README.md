@@ -13,7 +13,7 @@ All of the features our script have and all the possibilities.
   <a href="https://www.youtube.com/watch?v=ea963DAjAaY" target="_blank">
     <img src="https://img.shields.io/badge/🎥 Preview-red?style=for-the-badge&logo=youtube&logoColor=white" />
   </a>
-  <a href="https://yecoyz-resources-shop.tebex.io/category/2920585" target="_blank">
+  <a href="https://yecoyz.com/scripts/yecoyz-duty" target="_blank">
     <img src="https://img.shields.io/badge/🛒 Tebex Store-blue?style=for-the-badge&logo=cart&logoColor=white" />
   </a>
   <a href="https://discord.com/invite/s2NSxrDnNY" target="_blank">
