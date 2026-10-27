@@ -1,6 +1,9 @@
 {
     "noAccess": "You do not have permission to use the duty menu",
     "dutyEndedJobChange": "Your job changed, so your shift was ended and saved to your previous job",
+    "shiftEdited": "The shift was updated",
+    "shiftRemoved": "The shift was removed",
+    "shiftChangeFailed": "The shift could not be changed, reopen the menu and try again",
 
     "ui_DutyTitle": "Duty Manager",
     "ui_workersList": "Workers",
@@ -40,5 +43,14 @@
     "ui_filterMonth": "Month",
 
     "ui_manageWorkers": "Manage Workers",
-    "ui_searchWorkers": "Search workers..."
+    "ui_searchWorkers": "Search workers...",
+    "ui_editShift": "Edit",
+    "ui_removeShift": "Remove",
+    "ui_removeShiftConfirm": "Remove this shift?",
+    "ui_save": "Save",
+    "ui_cancel": "Cancel",
+    "ui_hours": "Hours",
+    "ui_minutes": "Minutes",
+    "ui_shiftEdited": "Edited",
+    "ui_shiftEditedBy": "Edited by"
 }

@@ -1,18 +1,9 @@
 import { useMemo, useState } from "react";
 import { CalendarClock } from "lucide-react";
 import { useTranslation } from "../contexts/TranslationProvider";
-import {
-  PERIODS,
-  filterShifts,
-  formatDay,
-  formatDuration,
-  formatTime,
-  shiftEnd,
-  shiftJobs,
-  shiftStart,
-  shiftStats,
-} from "../lib/format";
-import { Badge, EmptyState, Stat } from "./ui";
+import { PERIODS, filterShifts, formatDuration, shiftJobs, shiftStats } from "../lib/format";
+import ShiftRow from "./ShiftRow";
+import { EmptyState, Stat } from "./ui";
 
 const periodLabel = {
   all: "ui_filterAll",
@@ -22,8 +13,8 @@ const periodLabel = {
 };
 
 // Stats and shift list with period filter. With `showJobs` the shifts can also be
-// filtered per job (multijob), starting on `currentJob`.
-const ShiftHistory = ({ shifts, showJobs = false, currentJob }) => {
+// filtered per job (multijob), starting on `currentJob`. `manage` lets a boss edit/remove shifts.
+const ShiftHistory = ({ shifts, showJobs = false, currentJob, manage }) => {
   const { t } = useTranslation();
   const jobs = useMemo(() => (showJobs ? shiftJobs(shifts) : []), [shifts, showJobs]);
   const [period, setPeriod] = useState("all");
@@ -88,22 +79,14 @@ const ShiftHistory = ({ shifts, showJobs = false, currentJob }) => {
             <EmptyState icon={CalendarClock} text={t("ui_shiftsNoRecord")} />
           ) : (
             <div className="list">
-              {visible.map((shift, index) => {
-                const start = shiftStart(shift);
-                const end = shiftEnd(shift);
-                return (
-                  <div key={`${shift.startTime || shift.startTimeFormatted}-${index}`} className="shift inset">
-                    <div className="shift-date">
-                      <span className="shift-day">{formatDay(start)}</span>
-                      <span className="shift-range">
-                        {formatTime(start)} – {formatTime(end)}
-                      </span>
-                    </div>
-                    {showJobBadge && shift.job && <Badge>{shift.jobLabel || shift.job}</Badge>}
-                    <span className="shift-duration">{formatDuration(shift.duration)}</span>
-                  </div>
-                );
-              })}
+              {visible.map((shift, index) => (
+                <ShiftRow
+                  key={`${shift.index ?? index}-${shift.startTime || shift.startTimeFormatted}`}
+                  shift={shift}
+                  showJobBadge={showJobBadge}
+                  manage={manage}
+                />
+              ))}
             </div>
           )}
         </div>

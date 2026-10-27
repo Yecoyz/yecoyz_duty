@@ -39,6 +39,16 @@ Config.MultiplierSettings = {
     }
 }
 
+-- Lets the boss/chief fix the shift history of their workers in the Manage tab,
+-- for example when someone stayed on duty AFK to farm hours.
+Config.HistoryManagement = {
+    AllowEdit = true, -- Boss can change how long a shift lasted.
+    AllowRemove = true, -- Boss can remove a shift completely.
+    AllowSelfEdit = false, -- Boss can also change their own shifts.
+    MaxShiftHours = 24, -- The longest a shift can be set to when it is edited.
+    Log = true, -- Print every change to the server console.
+}
+
 -- Only if you use ESX.
 Config.BossGrades = {
     "boss",

@@ -8,7 +8,7 @@ import { useTranslation } from "../contexts/TranslationProvider";
 import { callback } from "../utilites/callback";
 
 function ManageWorkers() {
-  const { workerData, characterData } = useVisibility();
+  const { workerData, characterData, historyManagement } = useVisibility();
   const { t } = useTranslation();
   const [selected, setSelected] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,6 +17,22 @@ function ManageWorkers() {
     callback("getEmployeeHistory", worker.identifier)
       .then((shifts) => setSelected({ worker, shifts: Array.isArray(shifts) ? shifts : [] }))
       .catch(() => setSelected({ worker, shifts: [] }));
+  };
+
+  // The server sends back the worker's updated shifts after every change.
+  const changeShift = (event, shift, extra) =>
+    callback(event, { identifier: selected.worker.identifier, index: shift.index, key: shift.key, ...extra })
+      .then((res) => {
+        if (!res || !res.success) return false;
+        if (Array.isArray(res.shifts)) setSelected((prev) => prev && { ...prev, shifts: res.shifts });
+        return true;
+      })
+      .catch(() => false);
+
+  const manage = (historyManagement.edit || historyManagement.remove) && {
+    ...historyManagement,
+    onEdit: (shift, duration) => changeShift("editShift", shift, { duration }),
+    onRemove: (shift) => changeShift("removeShift", shift),
   };
 
   if (selected) {
@@ -42,7 +58,7 @@ function ManageWorkers() {
           </div>
         </div>
 
-        <ShiftHistory key={worker.identifier} shifts={shifts} />
+        <ShiftHistory key={worker.identifier} shifts={shifts} manage={manage} />
       </div>
     );
   }

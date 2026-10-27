@@ -7,6 +7,8 @@ All of the features our script have and all the possibilities.
 
 - Managing Workers system: This allows the boss or chief of a company to view all employees and monitor their work performance, including shifts, total work time, and average shift duration.
 
+- Shift corrections: The boss or chief can change how long a worker's shift lasted or remove it completely, for example when someone stayed on duty AFK to farm hours. Every change is marked as edited, keeps the original time and is logged in the server console. Configure it with `Config.HistoryManagement`.
+
 - Multiplier System: Rewards players for working longer shifts and staying active on duty. The more you work, the higher your multiplier grows. However, going off duty will gradually decrease the multiplier over time.
 
 <p align="center">

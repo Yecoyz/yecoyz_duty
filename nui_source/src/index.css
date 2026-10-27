@@ -767,3 +767,100 @@ button.worker:hover .worker-arrow {
   gap: 12px;
   padding: 12px;
 }
+
+/* Boss shift management */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #f05252;
+}
+
+.badge-warn {
+  border-color: rgba(251, 146, 60, 0.4);
+  background: rgba(251, 146, 60, 0.12);
+  color: var(--warn);
+}
+
+.shift-card {
+  transition: border-color 150ms;
+}
+
+.shift-card.active {
+  border-color: var(--line-strong);
+}
+
+.shift-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.icon-button.sm {
+  width: 28px;
+  height: 28px;
+}
+
+.icon-button.danger:hover {
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.shift-note {
+  padding: 0 12px 10px;
+  color: var(--dim);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.shift-editor {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.shift-editor-buttons {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.shift-confirm {
+  align-self: center;
+  color: var(--fg);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field .label {
+  font-size: 0.625rem;
+}
+
+.field input {
+  width: 72px;
+  height: 30px;
+  padding: 0 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  transition: border-color 150ms;
+}
+
+.field input:focus {
+  border-color: var(--line-strong);
+}

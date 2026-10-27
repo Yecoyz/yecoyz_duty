@@ -7,10 +7,16 @@ export const useVisibility = () => useContext(VisibilityContext);
 
 const toList = (value) => (Array.isArray(value) ? value : []);
 
+const defaultHistoryManagement = { edit: false, remove: false, maxHours: 24 };
+
 export const VisibilityProvider = ({ children }) => {
   const [isVisible, setIsVisible] = useState(isBrowser);
   const [workerData, setWorkerData] = useState(isBrowser ? mockData.workers : []);
   const [shiftsData, setShiftsData] = useState(isBrowser ? mockData.shifts : []);
+  // What the boss may change in a worker's history (Config.HistoryManagement).
+  const [historyManagement, setHistoryManagement] = useState(
+    isBrowser ? mockData.historyManagement : defaultHistoryManagement
+  );
   const [characterData, setCharacterData] = useState(
     isBrowser
       ? mockData.character
@@ -32,6 +38,7 @@ export const VisibilityProvider = ({ children }) => {
       if (!data) return;
 
       if (data.action === "showUI") {
+        setHistoryManagement({ ...defaultHistoryManagement, ...data.historyManagement });
         setWorkerData(toList(data.workers));
         setShiftsData(toList(data.shifts));
         if (data.character) {
@@ -66,6 +73,7 @@ export const VisibilityProvider = ({ children }) => {
         workerData,
         shiftsData,
         characterData,
+        historyManagement,
         setDutyState,
         setWorkerData,
         setShiftsData,

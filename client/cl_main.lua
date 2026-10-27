@@ -54,6 +54,11 @@ RegisterCommand("duty", function()
             dutyStarted = dutyStarted,
             isBoss = isBoss
         },
+        historyManagement = {
+            edit = Config.HistoryManagement.AllowEdit == true,
+            remove = Config.HistoryManagement.AllowRemove == true,
+            maxHours = Config.HistoryManagement.MaxShiftHours,
+        },
         workers = workers,
         shifts = dutyHistory
     })

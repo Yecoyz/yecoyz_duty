@@ -57,6 +57,14 @@ RegisterNUICallback("Eventhandler", function(data, cb)
     elseif (data.event == "getEmployeeHistory") then
         local employeHistory = Core.Callback.Await("yecoyz_duty:getEmployeHistory", data.data)
         return cb(employeHistory or {})
+    elseif (data.event == "editShift") or (data.event == "removeShift") then
+        local result = Core.Callback.Await("yecoyz_duty:" .. data.event, data.data)
+        if (result and result.success) then
+            ShowNotification(locale(data.event == "editShift" and "shiftEdited" or "shiftRemoved"), "success")
+        else
+            ShowNotification(locale("shiftChangeFailed"), "error")
+        end
+        return cb(result or { success = false })
     elseif (data.event == ("getLocale")) then
         local uiLocales = {}
         local locales = lib.getLocales()

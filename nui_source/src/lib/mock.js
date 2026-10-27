@@ -40,4 +40,5 @@ export const mockData = {
     { identifier: "e", name: "Mike Williams", grade: "Detective", phone: "Unknown", online: false },
   ],
   shifts: mockShifts,
+  historyManagement: { edit: true, remove: true, maxHours: 24 },
 };

@@ -180,23 +180,118 @@ Core.Callback.Register("yecoyz_duty:getHistory", function(source)
     return DecodeJson(row.history)
 end)
 
+-- Old shifts only have the formatted date, so read the start time from that.
+local function ShiftStartTime(shift)
+    if (tonumber(shift.startTime)) then return tonumber(shift.startTime) end
+    if (type(shift.startTimeFormatted) ~= "string") then return nil end
+
+    local year, month, day, hour, min, sec = shift.startTimeFormatted:match("^(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)$")
+    if (not year) then return nil end
+    return os.time({
+        year = tonumber(year), month = tonumber(month), day = tonumber(day),
+        hour = tonumber(hour), min = tonumber(min), sec = tonumber(sec),
+    })
+end
+
 -- Bosses only see the shifts worked in their own job. Old shifts saved before
 -- multijob support have no job and are still shown.
-Core.Callback.Register("yecoyz_duty:getEmployeHistory", function(source, identifier)
-    if (type(identifier) ~= "string") or (not GetBossPermission(source)) then return {} end
-
-    local jobName = GetPlayerJob(source)
+local function GetJobShifts(identifier, jobName, editable)
     local row = GetDutyRow(identifier)
     if (not row) then return {} end
 
     local shifts = {}
-    for _, shift in ipairs(DecodeJson(row.history)) do
+    for index, shift in ipairs(DecodeJson(row.history)) do
         if (shift.job == nil) or (shift.job == jobName) then
+            -- Index and start time point at the shift in the saved history, so the boss can edit it.
+            shift.index = index
+            shift.key = ShiftStartTime(shift)
+            shift.editable = editable and (shift.key ~= nil)
             shifts[#shifts + 1] = shift
         end
     end
 
     return shifts
+end
+
+local function CanManageHistory(source, identifier)
+    if (not GetBossPermission(source)) then return false end
+    if (Config.HistoryManagement.AllowSelfEdit) then return true end
+    return GetIdentifier(source) ~= identifier
+end
+
+Core.Callback.Register("yecoyz_duty:getEmployeHistory", function(source, identifier)
+    if (type(identifier) ~= "string") or (not GetBossPermission(source)) then return {} end
+
+    local settings = Config.HistoryManagement
+    local editable = (settings.AllowEdit or settings.AllowRemove) and CanManageHistory(source, identifier)
+    return GetJobShifts(identifier, GetPlayerJob(source), editable == true)
+end)
+
+local function LogHistoryChange(source, identifier, text)
+    if (not Config.HistoryManagement.Log) then return end
+    print(("^3[yecoyz_duty] %s (%s) %s for %s.^7"):format(GetFullName(source), GetIdentifier(source) or "?", text, identifier))
+end
+
+-- Edits or removes one shift. `key` (the start time) has to match the saved shift, so a shift that
+-- moved in the history (new shift saved, another one removed) is never changed by mistake.
+local function ChangeShift(source, data, action)
+    if (type(data) ~= "table") or (type(data.identifier) ~= "string") then return { success = false } end
+
+    local identifier = data.identifier
+    if (not CanManageHistory(source, identifier)) then return { success = false } end
+
+    local jobName = GetPlayerJob(source)
+    local row = GetDutyRow(identifier)
+    if (not row) then return { success = false } end
+
+    local history = DecodeJson(row.history)
+    local index = tonumber(data.index)
+    local shift = index and history[index]
+    if (not shift) or ((shift.job ~= nil) and (shift.job ~= jobName)) then return { success = false } end
+
+    local startTime = ShiftStartTime(shift)
+    if (not startTime) or (tonumber(data.key) ~= startTime) then return { success = false } end
+
+    local oldDuration = tonumber(shift.duration) or 0
+
+    if (action == "remove") then
+        table.remove(history, index)
+        LogHistoryChange(source, identifier, ("removed a shift (%s, %d minutes)"):format(shift.job or "no job", math.floor(oldDuration / 60)))
+    else
+        local duration = math.floor(tonumber(data.duration) or 0)
+        if (duration < 60) or (duration > Config.HistoryManagement.MaxShiftHours * 3600) then
+            return { success = false }
+        end
+
+        shift.duration = duration
+        shift.startTime = startTime
+        shift.endTime = startTime + duration
+        shift.endTimeFormatted = os.date("%Y-%m-%d %H:%M:%S", shift.endTime)
+        -- Keep the first worked time so the change can always be seen.
+        shift.edited = {
+            by = GetFullName(source),
+            at = os.time(),
+            originalDuration = (shift.edited and shift.edited.originalDuration) or oldDuration,
+        }
+        LogHistoryChange(source, identifier, ("changed a shift (%s) from %d to %d minutes"):format(shift.job or "no job", math.floor(oldDuration / 60), math.floor(duration / 60)))
+    end
+
+    local updated = MySQL.update.await("UPDATE `yecoyz_duty` SET `history` = ? WHERE `identifier` = ?", {
+        json.encode(history), identifier
+    })
+    if (not updated) then return { success = false } end
+
+    return { success = true, shifts = GetJobShifts(identifier, jobName, true) }
+end
+
+Core.Callback.Register("yecoyz_duty:editShift", function(source, data)
+    if (not Config.HistoryManagement.AllowEdit) then return { success = false } end
+    return ChangeShift(source, data, "edit")
+end)
+
+Core.Callback.Register("yecoyz_duty:removeShift", function(source, data)
+    if (not Config.HistoryManagement.AllowRemove) then return { success = false } end
+    return ChangeShift(source, data, "remove")
 end)
 
 Core.Callback.Register("yecoyz_duty:getStandaloneDuty", function(source)

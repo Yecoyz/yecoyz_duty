@@ -42,6 +42,15 @@ const fallback = {
   ui_filterMonth: "Month",
   ui_shiftsCount: "shifts",
   ui_jobOnlyNote: "Only shifts worked in your job are shown",
+  ui_editShift: "Edit",
+  ui_removeShift: "Remove",
+  ui_removeShiftConfirm: "Remove this shift?",
+  ui_save: "Save",
+  ui_cancel: "Cancel",
+  ui_hours: "Hours",
+  ui_minutes: "Minutes",
+  ui_shiftEdited: "Edited",
+  ui_shiftEditedBy: "Edited by",
 };
 
 export const TranslationProvider = ({ children }) => {
