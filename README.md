@@ -1,5 +1,32 @@
-# Features
-All of the features our script have and all the possibilities.
+# Yecoyz Duty – Free FiveM Duty Script (ESX / QBCore / Qbox)
+
+**Yecoyz Duty** is a free, open-source **FiveM duty script** for **ESX, QBCore and Qbox**. Players go on and off duty from a modern menu, see who is working right now, and bosses can review and manage their staff's shifts. Includes shift history, worker management, shift corrections and a salary multiplier.
+
+## Quick start
+
+1. Install the dependencies: [ox_lib](https://github.com/overextended/ox_lib), [oxmysql](https://github.com/overextended/oxmysql) and `yecoyz_core`.
+2. Download the [latest release](https://github.com/Yecoyz/yecoyz_duty/releases/latest) and extract it into your `resources` folder. Don't rename the folder.
+3. Add it to your `server.cfg` after the dependencies and your framework:
+
+```cfg
+ensure ox_lib
+ensure oxmysql
+ensure yecoyz_core
+ensure yecoyz_duty
+```
+
+4. Set your jobs in `shared/config.lua` and connect your paycheck system. Full guide: [installation docs](https://yecoyz.com/docs/yecoyz_duty/installation).
+
+## Requirements
+
+| Resource | Required |
+| --- | --- |
+| ESX, QBCore or Qbox | Yes |
+| ox_lib | Yes |
+| oxmysql | Yes |
+| yecoyz_core | Yes |
+
+## Features
 
 - A sleek, modern, and easy-to-use interface designed for a smooth user experience. Easily see which players are online or offline, and whether they are on or off duty. You can also quickly access their phone numbers for easy communication, as well as view their rank within your company or organization.
 
