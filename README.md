@@ -55,3 +55,7 @@ ensure yecoyz_duty
     <img src="https://img.shields.io/badge/Documentation-2F80ED?style=for-the-badge" />
   </a>
 </p>
+
+## License
+
+Free to use and modify on your own server under the [MIT License](LICENSE). If you share or re-upload this script, with or without changes, you must keep the copyright notice and credit **Yecoyz** as the original author.
