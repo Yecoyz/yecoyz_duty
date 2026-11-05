@@ -39,8 +39,9 @@ function HasAllowedJob(jobName)
     return false
 end
 
+-- The server sends a locale key; the text is translated here and shown by yecoyz_core.
 RegisterNetEvent("yecoyz_duty:notify", function(localeKey, notifyType)
-    ShowNotification(locale(localeKey), notifyType)
+    Core.Notify(locale(localeKey), notifyType, nil, locale("ui_DutyTitle"))
 end)
 
 RegisterNUICallback("Eventhandler", function(data, cb)
@@ -60,9 +61,9 @@ RegisterNUICallback("Eventhandler", function(data, cb)
     elseif (data.event == "editShift") or (data.event == "removeShift") then
         local result = Core.Callback.Await("yecoyz_duty:" .. data.event, data.data)
         if (result and result.success) then
-            ShowNotification(locale(data.event == "editShift" and "shiftEdited" or "shiftRemoved"), "success")
+            Core.Notify(locale(data.event == "editShift" and "shiftEdited" or "shiftRemoved"), "success", nil, locale("ui_DutyTitle"))
         else
-            ShowNotification(locale("shiftChangeFailed"), "error")
+            Core.Notify(locale("shiftChangeFailed"), "error", nil, locale("ui_DutyTitle"))
         end
         return cb(result or { success = false })
     elseif (data.event == ("getLocale")) then

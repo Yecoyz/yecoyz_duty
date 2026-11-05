@@ -3,7 +3,7 @@ lib.locale()
 RegisterCommand("duty", function()
     local playerJob = GetPlayerJobName()
     local allowedJob = HasAllowedJob(playerJob)
-    if (not allowedJob) then ShowNotification(locale("noAccess"), "error") return end
+    if (not allowedJob) then Core.Notify(locale("noAccess"), "error", nil, locale("ui_DutyTitle")) return end
 
     SetNuiFocus(true, true)
     local playerName = GetPlayerFullName()

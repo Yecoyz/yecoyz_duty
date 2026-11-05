@@ -1,9 +1,5 @@
 -- Player info for the duty UI, read through yecoyz_core.
 
-function ShowNotification(text, notifyType)
-    Core.Notify(text, notifyType)
-end
-
 function GetPlayerJobGradeName()
     local job = Core.GetJob()
     return job and job.gradeLabel or nil
