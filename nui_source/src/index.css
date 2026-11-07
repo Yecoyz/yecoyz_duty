@@ -95,16 +95,6 @@ button {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
 }
 
-.panel::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--accent);
-}
-
 .duty {
   width: 520px;
   height: min(800px, 92vh);
