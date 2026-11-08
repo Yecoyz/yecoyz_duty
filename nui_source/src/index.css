@@ -191,7 +191,6 @@ button {
 .btn-primary {
   background: var(--accent);
   color: var(--accent-ink);
-  box-shadow: 0 0 0 1px rgba(232, 217, 176, 0.25), 0 6px 20px rgba(232, 217, 176, 0.12);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -277,7 +276,6 @@ button {
 
 .status-dot.on {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
 }
 
 /* Profile */
