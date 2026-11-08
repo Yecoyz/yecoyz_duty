@@ -302,6 +302,14 @@ exports("GetDutyState", function(source)
     return GetPlayerOnDuty(source)
 end)
 
+-- Jobs outside Config.Jobs are never on duty here, so paycheck code uses this to leave them alone.
+---@param jobName string
+---@return boolean
+exports("IsDutyJob", function(jobName)
+    if (type(jobName) ~= "string") then return false end
+    return UsesFrameworkDuty() or HasAllowedJob(jobName)
+end)
+
 exports("GetSalaryMultiplier", function(source)
     return CalculateSalaryMultiplier(source)
 end)
