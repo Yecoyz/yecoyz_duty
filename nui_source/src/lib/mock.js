@@ -1,5 +1,10 @@
 // Sample data so the UI can be worked on in a normal browser (npm run dev).
-export const isBrowser = typeof window !== "undefined" && !window.invokeNative;
+// Pages served by FiveM (NUI or a yecoyz_tablet app) are on https://cfx-nui-<resource>/.
+export const isBrowser =
+  typeof window !== "undefined" && !window.invokeNative && !window.location.hostname.startsWith("cfx-nui-");
+
+// The yecoyz_tablet app is tablet.html; the /duty panel is index.html.
+export const isTablet = typeof window !== "undefined" && window.location.pathname.endsWith("tablet.html");
 
 const now = Math.floor(Date.now() / 1000);
 const hour = 3600;

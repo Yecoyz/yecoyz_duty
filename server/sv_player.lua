@@ -262,6 +262,11 @@ Core.Callback.Register("yecoyz_duty:getFullName", function(source)
 end)
 
 Core.Callback.Register("yecoyz_duty:setDuty", function(source, status)
+    -- Only jobs in Config.Jobs use duty here, whatever the client asks.
+    if (not HasAllowedJob(GetPlayerJob(source))) then
+        return { onDuty = GetPlayerOnDuty(source) == true }
+    end
+
     local onDuty = SetDuty(source, status == true)
     local dutyData = Cache.DutyData[source]
 

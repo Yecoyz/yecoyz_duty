@@ -48,6 +48,8 @@ RegisterNUICallback("Eventhandler", function(data, cb)
     if (data.event == "toggleDuty") then
         local result = ToggleDuty()
         if (not result) then return cb({ success = false }) end
+        -- The /duty panel and the tablet app both toggle here; keep the other one in step.
+        if (data.data and data.data.source ~= "tablet") then RefreshTabletApp() end
 
         return cb({
             success = true,
@@ -55,6 +57,13 @@ RegisterNUICallback("Eventhandler", function(data, cb)
             dutyStarted = result.dutyStarted,
             shifts = GetDutyHistory()
         })
+    elseif (data.event == "getDutyData") then
+        -- The tablet app loads its data itself instead of waiting for showUI.
+        local dutyData = GetDutyData()
+        if (not dutyData) then return cb({ allowed = false }) end
+
+        dutyData.allowed = true
+        return cb(dutyData)
     elseif (data.event == "getEmployeeHistory") then
         local employeHistory = Core.Callback.Await("yecoyz_duty:getEmployeHistory", data.data)
         return cb(employeHistory or {})

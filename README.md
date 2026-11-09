@@ -38,6 +38,8 @@ ensure yecoyz_duty
 
 - Multiplier System: Rewards players for working longer shifts and staying active on duty. The more you work, the higher your multiplier grows. However, going off duty will gradually decrease the multiplier over time.
 
+- Tablet app: With [yecoyz_tablet](https://yecoyz.com) running, the duty menu is also an app on the tablet for the jobs in `Config.Jobs`. It has the same tabs as `/duty`, plus today's and this week's hours. Configure or turn it off with `Config.Tablet`.
+
 <p align="center">
   <a href="https://www.youtube.com/watch?v=ea963DAjAaY" target="_blank">
     <img src="https://img.shields.io/badge/🎥 Preview-red?style=for-the-badge&logo=youtube&logoColor=white" />

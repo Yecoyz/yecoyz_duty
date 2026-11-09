@@ -33,6 +33,7 @@ end
 
 exports("SetDuty", function(status)
     SetDuty(status)
+    RefreshTabletApp()
 end)
 
 Core.OnPlayerLoaded(function()

@@ -5,6 +5,7 @@ import { useTranslation } from "../contexts/TranslationProvider";
 import { callback } from "../utilites/callback";
 import { formatClock } from "../lib/format";
 import useNow from "../lib/useNow";
+import { isTablet } from "../lib/mock";
 import { Avatar, Badge, Button, StatusDot } from "./ui";
 
 const Profile = () => {
@@ -19,7 +20,7 @@ const Profile = () => {
   const handleDutyToggle = () => {
     if (busy) return;
     setBusy(true);
-    callback("toggleDuty")
+    callback("toggleDuty", { source: isTablet ? "tablet" : "panel" })
       .then((res) => {
         if (!res || !res.success) return;
         setDutyState(res.isOnDuty, res.dutyStarted);

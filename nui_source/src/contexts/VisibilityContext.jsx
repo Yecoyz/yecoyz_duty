@@ -9,8 +9,9 @@ const toList = (value) => (Array.isArray(value) ? value : []);
 
 const defaultHistoryManagement = { edit: false, remove: false, maxHours: 24 };
 
-export const VisibilityProvider = ({ children }) => {
-  const [isVisible, setIsVisible] = useState(isBrowser);
+// alwaysVisible: the tablet app, which is shown and hidden by the tablet instead of showUI / hideUI.
+export const VisibilityProvider = ({ children, alwaysVisible = false }) => {
+  const [isVisible, setIsVisible] = useState(isBrowser || alwaysVisible);
   const [workerData, setWorkerData] = useState(isBrowser ? mockData.workers : []);
   const [shiftsData, setShiftsData] = useState(isBrowser ? mockData.shifts : []);
   // What the boss may change in a worker's history (Config.HistoryManagement).
@@ -32,23 +33,28 @@ export const VisibilityProvider = ({ children }) => {
     }));
   };
 
+  // Everything the UI shows, as sent with showUI (or loaded by the tablet app).
+  const applyDutyData = (data) => {
+    setHistoryManagement({ ...defaultHistoryManagement, ...data.historyManagement });
+    setWorkerData(toList(data.workers));
+    setShiftsData(toList(data.shifts));
+    if (data.character) {
+      setCharacterData({
+        ...data.character,
+        isOnDuty: Boolean(data.character.isOnDuty),
+        dutyStarted: data.character.dutyStarted || null,
+        isBoss: Boolean(data.character.isBoss),
+      });
+    }
+  };
+
   useEffect(() => {
     const handleMessage = (event) => {
       const data = event.data;
       if (!data) return;
 
       if (data.action === "showUI") {
-        setHistoryManagement({ ...defaultHistoryManagement, ...data.historyManagement });
-        setWorkerData(toList(data.workers));
-        setShiftsData(toList(data.shifts));
-        if (data.character) {
-          setCharacterData({
-            ...data.character,
-            isOnDuty: Boolean(data.character.isOnDuty),
-            dutyStarted: data.character.dutyStarted || null,
-            isBoss: Boolean(data.character.isBoss),
-          });
-        }
+        applyDutyData(data);
         setIsVisible(true);
       } else if (data.action === "hideUI") {
         setIsVisible(false);
@@ -75,6 +81,7 @@ export const VisibilityProvider = ({ children }) => {
         characterData,
         historyManagement,
         setDutyState,
+        applyDutyData,
         setWorkerData,
         setShiftsData,
         setCharacterData,

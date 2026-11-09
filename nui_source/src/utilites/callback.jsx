@@ -1,4 +1,4 @@
-import { isBrowser, mockShifts } from "../lib/mock";
+import { isBrowser, mockData, mockShifts } from "../lib/mock";
 
 // Same shape as the server: index/key point at the saved shift.
 let mockEmployeeShifts = mockShifts
@@ -7,6 +7,7 @@ let mockEmployeeShifts = mockShifts
 
 const browserResponses = {
   getLocale: () => ({}),
+  getDutyData: () => ({ allowed: true, ...mockData }),
   closePage: () => ({ success: true }),
   getEmployeeHistory: () => mockEmployeeShifts,
   editShift: ({ index, duration }) => {

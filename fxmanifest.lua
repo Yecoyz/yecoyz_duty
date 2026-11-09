@@ -2,13 +2,14 @@ fx_version "cerulean"
 game "gta5"
 
 author "Yecoyz - Yecoyz Resources"
-version "1.3.2"
+version "1.4.0"
 lua54 "yes"
 
 client_scripts {
     "client/cl_player.lua",
     "client/cl_main.lua",
     "client/cl_funcs.lua",
+    "client/cl_tablet.lua",
 }
 
 server_scripts {
@@ -35,7 +36,7 @@ ui_page "dist/index.html"
 
 files {
     -- "nui_source/reload.html",
-    "dist/*.html",
+    "dist/*.html", -- index.html (/duty) and tablet.html (yecoyz_tablet app)
     "dist/assets/*.js",
     "dist/assets/*.css",
 

@@ -51,6 +51,17 @@ Config.HistoryManagement = {
     Log = true, -- Print every change to the server console.
 }
 
+-- The duty menu as an app on yecoyz_tablet. Ignored when yecoyz_tablet is not running.
+-- Only the jobs in Config.Jobs see the app.
+Config.Tablet = {
+    Enabled = true,
+    Label = "Duty", -- Name under the icon (max 24 characters).
+    Icon = "clock", -- A built-in tablet icon name, see yecoyz_tablet/sdk/README.md.
+    Description = "Go on duty, see your shifts and manage your workers",
+    InstalledByDefault = true, -- false: players install it from the Apps app first.
+    Removable = true, -- false: players can not remove it.
+}
+
 -- Only if you use ESX.
 Config.BossGrades = {
     "boss",

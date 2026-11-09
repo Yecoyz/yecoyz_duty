@@ -1,14 +1,11 @@
 lib.locale()
 
-RegisterCommand("duty", function()
+-- Everything the duty UI shows. Used by /duty and by the tablet app.
+-- Returns nil when the player's job is not one of Config.Jobs.
+function GetDutyData()
     local playerJob = GetPlayerJobName()
-    local allowedJob = HasAllowedJob(playerJob)
-    if (not allowedJob) then Core.Notify(locale("noAccess"), "error", nil, locale("ui_DutyTitle")) return end
+    if (not HasAllowedJob(playerJob)) then return nil end
 
-    SetNuiFocus(true, true)
-    local playerName = GetPlayerFullName()
-    local playerJobLabel = GetPlayerJobLabel()
-    local playerRank = GetPlayerJobGradeName()
     local isOnDuty = GetPlayerOnDuty() == true
     local dutyStarted = nil
 
@@ -17,8 +14,6 @@ RegisterCommand("duty", function()
     end
 
     local workers = Core.Callback.Await("yecoyz_duty:getActiveWorkers") or {}
-    local dutyHistory = GetDutyHistory()
-    local isBoss = GetIfBoss()
     local employees = Core.Callback.Await("yecoyz_duty:getAllEmployees") or {}
 
     local existingEmployees = {}
@@ -43,16 +38,15 @@ RegisterCommand("duty", function()
         end
     end
 
-    SendNUIMessage({
-        action = "showUI",
+    return {
         character = {
-            name = playerName,
-            job = playerJobLabel,
+            name = GetPlayerFullName(),
+            job = GetPlayerJobLabel(),
             jobName = playerJob,
-            grade = playerRank,
+            grade = GetPlayerJobGradeName(),
             isOnDuty = isOnDuty,
             dutyStarted = dutyStarted,
-            isBoss = isBoss
+            isBoss = GetIfBoss()
         },
         historyManagement = {
             edit = Config.HistoryManagement.AllowEdit == true,
@@ -60,8 +54,17 @@ RegisterCommand("duty", function()
             maxHours = Config.HistoryManagement.MaxShiftHours,
         },
         workers = workers,
-        shifts = dutyHistory
-    })
+        shifts = GetDutyHistory()
+    }
+end
+
+RegisterCommand("duty", function()
+    local dutyData = GetDutyData()
+    if (not dutyData) then Core.Notify(locale("noAccess"), "error", nil, locale("ui_DutyTitle")) return end
+
+    SetNuiFocus(true, true)
+    dutyData.action = "showUI"
+    SendNUIMessage(dutyData)
 end, false)
 
 

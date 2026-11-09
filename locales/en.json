@@ -52,5 +52,7 @@
     "ui_hours": "Hours",
     "ui_minutes": "Minutes",
     "ui_shiftEdited": "Edited",
-    "ui_shiftEditedBy": "Edited by"
+    "ui_shiftEditedBy": "Edited by",
+    "ui_noAccess": "Your job does not use the duty system",
+    "ui_loading": "Loading..."
 }
