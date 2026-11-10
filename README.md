@@ -24,7 +24,7 @@ ensure yecoyz_duty
 | ESX, QBCore or Qbox | Yes |
 | ox_lib | Yes |
 | oxmysql | Yes |
-| yecoyz_core | Yes |
+| yecoyz_core | Yes (1.5.0 or newer for sd-phone numbers) |
 
 ## Features
 
