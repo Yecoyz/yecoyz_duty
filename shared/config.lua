@@ -7,6 +7,8 @@ Config.Jobs = {
     "mechanic",
 }
 
+-- sd-phone is read automatically when it is running (any framework). With its SIM cards (unique phones) on,
+-- a number is only known while the player is online. The settings below are used when sd-phone has no number.
 -- Only if you use ESX. ESX has no phone number by default, it comes from your phone script.
 -- Default fits phone scripts that add `phone_number` to `users` (gksphone, qs-smartphone, npwd).
 -- lb-phone: table = "phone_phones", column = "phone_number", identifierColumn = "owner_id".

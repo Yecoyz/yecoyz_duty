@@ -69,7 +69,35 @@ local function HasPhoneColumn()
     return phoneColumnExists
 end
 
+local SD_PHONE = "sd-phone"
+
+-- sd-phone keeps its own numbers, so they are read from it first when it is running.
+-- With SIM cards (unique phones) the number belongs to the SIM in the player's phone, so it can only be read
+-- while they are online. Never assigns a number: a character that never used the phone has none yet.
+---@param identifier string
+---@param source? number the player's server id when they are online
+---@return string?
+local function GetSdPhoneNumber(identifier, source)
+    if (GetResourceState(SD_PHONE) ~= "started") then return nil end
+
+    local ok, phone = pcall(function()
+        local sdPhone = exports[SD_PHONE]
+        if (source) and (sdPhone:isSimModeActive()) then
+            return sdPhone:getSimNumber(source)
+        end
+        return sdPhone:getPhoneNumberByIdentifier(identifier)
+    end)
+    if (not ok) then return nil end
+
+    if (type(phone) == "number") then phone = tostring(math.tointeger(phone) or phone) end
+    if (type(phone) ~= "string") or (phone == "") then return nil end
+    return phone
+end
+
 function GetPhoneNumber(identifier)
+    local sdPhone = GetSdPhoneNumber(identifier)
+    if (sdPhone) then return sdPhone end
+
     if (Core.Framework == "esx") then
         if (not HasPhoneColumn()) then return "Unknown" end
 
@@ -91,8 +119,19 @@ function GetPhoneNumber(identifier)
     return "Unknown"
 end
 
+-- Server ids of the job's online players by identifier, for phone numbers that are only known while online.
+local function GetOnlineSources(jobName)
+    local sources = {}
+    for _, src in ipairs(Core.GetPlayersByJob(jobName)) do
+        local identifier = Core.GetIdentifier(src)
+        if (identifier) then sources[identifier] = src end
+    end
+    return sources
+end
+
 -- Every employee of a job, online or not, read from the framework's tables.
 function GetAllEmployees(jobName)
+    local onlineSources = GetOnlineSources(jobName)
     if (Core.Framework == "esx") then
         local employees = MySQL.query.await([[
             SELECT u.identifier, u.firstname, u.lastname, g.label AS grade_label
@@ -107,7 +146,8 @@ function GetAllEmployees(jobName)
                 identifier = employees[i].identifier,
                 firstname = employees[i].firstname,
                 lastname = employees[i].lastname,
-                phone_number = GetPhoneNumber(employees[i].identifier),
+                phone_number = GetSdPhoneNumber(employees[i].identifier, onlineSources[employees[i].identifier])
+                    or GetPhoneNumber(employees[i].identifier),
                 job = jobLabel or "Unknown",
                 job_grade = employees[i].grade_label or "Unknown",
             }
@@ -126,7 +166,8 @@ function GetAllEmployees(jobName)
                 identifier = rawEmployees[i].citizenid,
                 firstname = charinfo.firstname or "Unknown",
                 lastname = charinfo.lastname or "Unknown",
-                phone_number = charinfo.phone or "Unknown",
+                phone_number = GetSdPhoneNumber(rawEmployees[i].citizenid, onlineSources[rawEmployees[i].citizenid])
+                    or charinfo.phone or "Unknown",
                 job = jobinfo.label or "Unknown",
                 job_grade = jobinfo.grade and jobinfo.grade.name or "Unknown"
             }
@@ -179,7 +220,7 @@ function GetActiveWorkers(jobName)
                 name = GetFullName(src),
                 job = job.label,
                 grade = job.gradeLabel,
-                phone = character.phone or GetPhoneNumber(identifier),
+                phone = GetSdPhoneNumber(identifier, src) or character.phone or GetPhoneNumber(identifier),
                 dutyStarted = startTime,
                 dutyTime = FormatDutyTime(startTime),
                 online = true
